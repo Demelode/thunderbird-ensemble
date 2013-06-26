@@ -8,6 +8,7 @@ const MODULE_REQUIRES = ['folder-display-helpers',
                          'address-book-helpers'];
 
 const Cr = Components.results;
+const PORT = 5232;
 
 Cu.import("resource:///modules/mailServices.js");
 Cu.import("resource://ensemble/connectors/CardDAVConnector.jsm");
@@ -19,8 +20,8 @@ function setupModule(module) {
 }
 
 function test_server_connection_success() {
-  let server = new HttpServer();
-  const PORT = 5232;
+  let server = Components.classes["@mozilla.org/server/jshttp;1"]
+                         .createInstance(Components.interfaces.nsIHttpServer);
   server.start(PORT);
 
   let connector = new CardDAVConnector();
