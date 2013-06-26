@@ -9,7 +9,13 @@ const MODULE_REQUIRES = ['folder-display-helpers',
 
 const Cr = Components.results;
 const PORT = 5232;
-
+const REQUEST_BODY = "Allow: OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, COPY, MOVE\n" +
+   "Allow: MKCOL, PROPFIND, PROPPATCH, LOCK, UNLOCK, REPORT, ACL\n" +
+   "DAV: 1, 2, 3, access-control, addressbook\n" +
+   "DAV: extended-mkcol\n" +
+   "Date: Sat, 11 Nov 2006 09:32:12 GMT\n" +
+   "Content-Length: 0";
+   
 Cu.import("resource:///modules/mailServices.js");
 Cu.import("resource://ensemble/connectors/CardDAVConnector.jsm");
 Cu.import("resource://gre/modules/Task.jsm");
@@ -20,8 +26,17 @@ function setupModule(module) {
 }
 
 function test_server_connection_success() {
-  let server = Components.classes["@mozilla.org/server/jshttp;1"]
-                         .createInstance(Components.interfaces.nsIHttpServer);
+  // let server = Components.classes["@mozilla.org/server/jshttp;1"]
+  //                        .createInstance(Components.interfaces.nsIHttpServer);
+  let server = new nsHttpServer();
+                      
+  function connectionResponder(request, response) {
+    response.setStatusLine(request.httpVersion, 200, "OK");
+    response.setHeader("Content-Type", "text/xml", false);
+    response.bodyOutputStream.write(REQUEST_BODY, REQUEST_BODY.length);
+  } 
+
+  server.registerPathHandler("/", connectionResponder);
   server.start(PORT);
 
   let connector = new CardDAVConnector();
