@@ -15,11 +15,13 @@ const REQUEST_BODY = "Allow: OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, COPY,
    "DAV: extended-mkcol\n" +
    "Date: Sat, 11 Nov 2006 09:32:12 GMT\n" +
    "Content-Length: 0";
-   
+
 Cu.import("resource:///modules/mailServices.js");
 Cu.import("resource://ensemble/connectors/CardDAVConnector.jsm");
 Cu.import("resource://gre/modules/Task.jsm");
 Cu.import("resource://testing-common/httpd.js");
+
+do_load_httpd_js();
 
 function setupModule(module) {
   collector.getModule("folder-display-helpers").installInto(module);
@@ -28,7 +30,7 @@ function setupModule(module) {
 function test_server_connection_success() {
   // let server = Components.classes["@mozilla.org/server/jshttp;1"]
   //                        .createInstance(Components.interfaces.nsIHttpServer);
-  let server = new nsHttpServer();
+  let server = new HttpServer();
                       
   function connectionResponder(request, response) {
     response.setStatusLine(request.httpVersion, 200, "OK");
@@ -45,9 +47,11 @@ function test_server_connection_success() {
 
   promise.then(function() {
   	server.stop();
+    do_test_finished();
     done = true;
   }, function(aError) {
   	server.stop();
+    do_test_finished();
     throw aError;
   });
 
