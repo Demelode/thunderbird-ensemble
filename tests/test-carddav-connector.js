@@ -19,7 +19,7 @@ const REQUEST_BODY = "Allow: OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, COPY,
 Cu.import("resource:///modules/mailServices.js");
 Cu.import("resource://ensemble/connectors/CardDAVConnector.jsm");
 Cu.import("resource://gre/modules/Task.jsm");
-//Cu.import("resource://testing-common/httpd.js");
+Cu.import("resource://testing-common/httpd.js");
 
 
 function setupModule(module) {
