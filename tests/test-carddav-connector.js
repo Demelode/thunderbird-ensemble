@@ -21,16 +21,13 @@ Cu.import("resource://ensemble/connectors/CardDAVConnector.jsm");
 Cu.import("resource://gre/modules/Task.jsm");
 Cu.import("resource://testing-common/httpd.js");
 
-do_load_httpd_js();
-
 function setupModule(module) {
   collector.getModule("folder-display-helpers").installInto(module);
 }
 
 function test_server_connection_success() {
-  // let server = Components.classes["@mozilla.org/server/jshttp;1"]
-  //                        .createInstance(Components.interfaces.nsIHttpServer);
-  let server = new HttpServer();
+  let server = Components.classes["@mozilla.org/server/jshttp;1"]
+                          .createInstance(Components.interfaces.nsIHttpServer);
                       
   function connectionResponder(request, response) {
     response.setStatusLine(request.httpVersion, 200, "OK");
@@ -41,17 +38,22 @@ function test_server_connection_success() {
   server.registerPathHandler("/", connectionResponder);
   server.start(PORT);
 
+  dump("Identity After Start: " + server.identity.primaryScheme + "://"
+                                + server.identity.primaryHost + ":"
+                                + server.identity.primaryPort 
+                                + "\n\n");
+
   let connector = new CardDAVConnector();
-  let promise = connector.testServerConnection("http://localhost:" + PORT);
+  let promise = connector.testServerConnection(server.identity.primaryScheme + "://"
+                                + server.identity.primaryHost + ":"
+                                + server.identity.primaryPort);
   let done = false;
 
   promise.then(function() {
   	server.stop();
-    do_test_finished();
     done = true;
   }, function(aError) {
   	server.stop();
-    do_test_finished();
     throw aError;
   });
 
