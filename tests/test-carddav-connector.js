@@ -58,21 +58,9 @@ MockCardDAVServer.prototype = {
     this._server.start(this._port);
   },
 
-  stopServer: function MCDS_stop(promise) {
-    let done = false;
-    promise.then(function() {
-      _server.stop(function(){
-        done = true;
-      });
-    }, function(aError) {
-      _server.stop(function(){
-        done = false;
-      });
-     // throw aError;
-    });
-    
-    mc.waitFor(function() done, "Timed out waiting for promise to resolve.");
-  },
+  stop: function MCDS_stop(stopFunc) {
+    this._server.stop(stopFunc);
+  }, 
 }
 
 
@@ -88,6 +76,7 @@ function test_server_connection_success() {
     response.bodyOutputStream.write(REQUEST_BODY, REQUEST_BODY.length);
   } 
 
+  let done = false;
   let server = new MockCardDAVServer();
   server.init(kPort);
   server.registerPathHandler("/", connectionResponder);
@@ -96,6 +85,17 @@ function test_server_connection_success() {
   let connector = new CardDAVConnector();
   let promise = connector.testServerConnection("http://localhost:" + kPort);
 
-  server.stopServer(promise);
- 
+  promise.then(function() {
+    server.stop(function(){
+      done = true;
+    });
+  }, function(aError) {
+    server.stop(function(){
+      done = false;
+    });
+    throw aError;
+  });
+  
+  mc.waitFor(function() done, "Timed out waiting for promise to resolve.");
+
 }
