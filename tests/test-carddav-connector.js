@@ -15,19 +15,19 @@ Cu.import('resource://mozmill/stdlib/httpd.js');;
 const Cr = Components.results;
 const PORT = 5232;
 const REQUEST_BODY = "Allow: OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, COPY, MOVE\n" +
-   "Allow: MKCOL, PROPFIND, PROPPATCH, LOCK, UNLOCK, REPORT, ACL\n" +
-   "DAV: 1, 2, 3, access-control, addressbook\n" +
-   "DAV: extended-mkcol\n" +
-   "Date: Sat, 11 Nov 2006 09:32:12 GMT\n" +
-   "Content-Length: 0";
+  "Allow: MKCOL, PROPFIND, PROPPATCH, LOCK, UNLOCK, REPORT, ACL\n" +
+  "DAV: 1, 2, 3, access-control, addressbook\n" +
+  "DAV: extended-mkcol\n" +
+  "Date: Sat, 11 Nov 2006 09:32:12 GMT\n" +
+  "Content-Length: 0";
 
-const kDefaultReturnHeader = {
+const kReturnHeader = {
   statusCode: 200,
   statusString: "OK",
   contentType: "text/plain",
 }
 
-const kCardDAVReturnHandler = {
+const kCardDAVReturnHeader = {
   statusCode: 200,
   statusString: "OK",
   contentType: "text/xml",
@@ -38,6 +38,39 @@ const kCardDAVReturnHandler = {
     "Date: Sat, 11 Nov 2006 09:32:12 GMT\n" +
     "Content-Length: 0",
 }
+
+function MockCardDAVServer() {}
+
+MockCardDAVServer.prototype = {
+  _server = null,
+  _port = null,
+
+  init: function MCDS_init(port) {
+    this._server = new HttpServer();
+    this._port = port;    
+  },
+
+  start: function MCDS_start() {
+    this._server.start(this._port);
+  },
+
+  stop: function MCDS_stop(promise) {
+    let done = false;
+    promise.then(function() {
+      server.stop(function(){
+        done = true;
+      });
+    }, function(aError) {
+      server.stop(function(){
+        done = false;
+      });
+      return aError;
+    });
+    
+    mc.waitFor(function() done, "Timed out waiting for promise to resolve.");
+  },
+}
+
 
 function setupModule(module) {
   collector.getModule("folder-display-helpers").installInto(module);
@@ -52,7 +85,7 @@ function test_server_connection_success() {
   function connectionResponder(request, response) {
     response.setStatusLine(request.httpVersion, 200, "OK");
     response.setHeader("Content-Type", "text/xml", false);
-    response.bodyOutputStream.write(REQUEST_BODY, REQUEST_BODY.length);
+    response.bodyOutputStream.write(kCardDAVReturnHeader.headerBody, kCardDAVReturnHeader.headerBody.length);
   } 
 
   server.registerPathHandler("/", connectionResponder);
