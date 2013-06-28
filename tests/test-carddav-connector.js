@@ -27,21 +27,8 @@ function setupModule(module) {
 }
 
 
-function wait_for_promise(promise, done) {
-  promise.then(function() {
-    return true;
-  }, function(aError) {
-    return aError;
-  });
-  
-  mc.waitFor(function() done, "Timed out waiting for promise to resolve.");
-}
-
-
 function test_server_connection_success() {
   let done = false;
-  // let server = Components.classes["@mozilla.org/server/jshttp;1"]
-  //                         .createInstance(Components.interfaces.nsIHttpServer);
   let server = new HttpServer();
   let connector = new CardDAVConnector();
 
@@ -54,22 +41,9 @@ function test_server_connection_success() {
   server.registerPathHandler("/", connectionResponder);
   server.start(PORT);
 
-  dump("Identity After Start: " + server.identity.primaryScheme + "://"
-                                + server.identity.primaryHost + ":"
-                                + server.identity.primaryPort 
-                                + "\n\n");
-
   let promise = connector.testServerConnection(server.identity.primaryScheme + "://"
                                 + server.identity.primaryHost + ":"
                                 + server.identity.primaryPort);
-
-  // done = wait_for_promise(promise, done);
-  // if(done) {
-  //   server.stop();
-  // } else {
-  //   throw done;
-  //   server.stop(function(){});
-  // }
 
   promise.then(function() {
     server.stop(function(){
@@ -83,5 +57,5 @@ function test_server_connection_success() {
   });
   
   mc.waitFor(function() done, "Timed out waiting for promise to resolve.");
-
+ 
 }
