@@ -13,7 +13,13 @@ Cu.import("resource://gre/modules/Task.jsm");
 Cu.import('resource://mozmill/stdlib/httpd.js');;
 
 const Cr = Components.results;
-const kPort = 5232;
+const PORT = 5232;
+const REQUEST_BODY = "Allow: OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, COPY, MOVE\n" +
+   "Allow: MKCOL, PROPFIND, PROPPATCH, LOCK, UNLOCK, REPORT, ACL\n" +
+   "DAV: 1, 2, 3, access-control, addressbook\n" +
+   "DAV: extended-mkcol\n" +
+   "Date: Sat, 11 Nov 2006 09:32:12 GMT\n" +
+   "Content-Length: 0";
 
 const kDefaultReturnHeader = {
   statusCode: 200,
@@ -21,7 +27,7 @@ const kDefaultReturnHeader = {
   contentType: "text/plain",
 }
 
-const kDefaultCardDAVReturnHandler = {
+const kCardDAVReturnHandler = {
   statusCode: 200,
   statusString: "OK",
   contentType: "text/xml",
@@ -50,7 +56,7 @@ function test_server_connection_success() {
   } 
 
   server.registerPathHandler("/", connectionResponder);
-  server.start(kPort);
+  server.start(PORT);
 
   let promise = connector.testServerConnection(server.identity.primaryScheme + "://"
                                 + server.identity.primaryHost + ":"
