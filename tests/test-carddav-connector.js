@@ -19,7 +19,7 @@ const REQUEST_BODY = "Allow: OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, COPY,
 Cu.import("resource:///modules/mailServices.js");
 Cu.import("resource://ensemble/connectors/CardDAVConnector.jsm");
 Cu.import("resource://gre/modules/Task.jsm");
-Cu.import("resource://testing-common/httpd.js");
+Cu.import('resource://mozmill/stdlib/httpd.js');;
 
 
 function setupModule(module) {
@@ -39,9 +39,12 @@ function wait_for_promise(promise, done) {
 
 
 function test_server_connection_success() {
-  let server = Components.classes["@mozilla.org/server/jshttp;1"]
-                          .createInstance(Components.interfaces.nsIHttpServer);
-                      
+  let done = false;
+  // let server = Components.classes["@mozilla.org/server/jshttp;1"]
+  //                         .createInstance(Components.interfaces.nsIHttpServer);
+  let server = new HttpServer();
+  let connector = new CardDAVConnector();
+
   function connectionResponder(request, response) {
     response.setStatusLine(request.httpVersion, 200, "OK");
     response.setHeader("Content-Type", "text/xml", false);
@@ -56,18 +59,29 @@ function test_server_connection_success() {
                                 + server.identity.primaryPort 
                                 + "\n\n");
 
-  let connector = new CardDAVConnector();
   let promise = connector.testServerConnection(server.identity.primaryScheme + "://"
                                 + server.identity.primaryHost + ":"
                                 + server.identity.primaryPort);
-  let done = false;
-  let result = wait_for_promise(promise, done);
-  if(result == true) {
-    done = result;
-    server.stop();
-  } else {
-    throw result;
-    server.stop(function(){});
-  }
+
+  // done = wait_for_promise(promise, done);
+  // if(done) {
+  //   server.stop();
+  // } else {
+  //   throw done;
+  //   server.stop(function(){});
+  // }
+
+  promise.then(function() {
+    server.stop(function(){
+      done = true;
+    });
+  }, function(aError) {
+    server.stop(function(){
+      done = false;
+    });
+    return aError;
+  });
+  
+  mc.waitFor(function() done, "Timed out waiting for promise to resolve.");
 
 }
