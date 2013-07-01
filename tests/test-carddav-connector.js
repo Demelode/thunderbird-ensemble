@@ -13,6 +13,8 @@ Cu.import('resource://mozmill/stdlib/httpd.js');;
 const Cr = Components.results;
 const kPort = 5232;
 
+let gServer = null;
+
 const kSuccessHeader = {
   statusCode: 200,
   statusString: "OK",
@@ -61,6 +63,26 @@ function setupModule(module) {
 }
 
 
+function wait_for_promise_resolved(promise) {
+  let done = false;
+
+  Task.spawn(function() {
+    yield promise.then(function() {
+      gServer.stop(function(){
+        done = true;
+      });
+    }, function(aError) {
+      gServer.stop(function(){
+        done = false;
+      });
+      throw aError;
+    });
+  });
+
+  mc.waitFor(function() done, "Timed out waiting for promise to resolve.");
+}
+
+
 function test_server_connection_success() {
   function connectionResponder(request, response) {
     response.setStatusLine(request.httpVersion, 
@@ -70,27 +92,13 @@ function test_server_connection_success() {
     response.bodyOutputStream.write(kCardDAVReturnHeader.headerBody, 
                                     kCardDAVReturnHeader.headerBody.length);
   } 
-
-  let done = false;
-  let server = new MockCardDAVServer();
-  server.init(kPort);
-  server.registerPathHandler("/", connectionResponder);
-  server.start();
+  gServer = new MockCardDAVServer();
+  gServer.init(kPort);
+  gServer.registerPathHandler("/", connectionResponder);
+  gServer.start();
 
   let connector = new CardDAVConnector();
   let promise = connector.testServerConnection("http://localhost:" + kPort);
-
-  promise.then(function() {
-    server.stop(function(){
-      done = true;
-    });
-  }, function(aError) {
-    server.stop(function(){
-      done = false;
-    });
-    throw aError;
-  });
   
-  mc.waitFor(function() done, "Timed out waiting for promise to resolve.");
-
+  wait_for_promise_resolved(promise);
 }
