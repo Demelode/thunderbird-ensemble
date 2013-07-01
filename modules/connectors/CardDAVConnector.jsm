@@ -5,20 +5,11 @@
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 const Cu = Components.utils;
-const Cr = Components.results;
 
 let EXPORTED_SYMBOLS = ['CardDAVConnector'];
-let Common = {};
 
-Cu.import("resource://ensemble/Common.jsm", Common);
-Cu.import("resource://gre/modules/Services.jsm");
-Cu.import("resource:///modules/iteratorUtils.jsm");
 Cu.import("resource://gre/modules/commonjs/sdk/core/promise.js");
 Cu.import("resource://gre/modules/Task.jsm");
-Cu.import("resource:///modules/mailServices.js");
-Cu.import("resource://gre/modules/NetUtil.jsm");
-Cu.import("resource://ensemble/Record.jsm");
-Cu.import("resource://ensemble/Tag.jsm");
 
 let CardDAVConnector = function(aAccountKey, aRecordChangesCbObj) {};
 
@@ -35,29 +26,32 @@ CardDAVConnector.prototype = {
   //
   // This would produce a response status of 200. 
 
-  testServerConnection: function connect(url) {
-    let promise = Promise.defer();
-    let http = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Ci.nsIXMLHttpRequest);
+  testServerConnection: function(url) {
+    let deferred = Promise.defer();
+    let http = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"]
+                 .createInstance(Ci.nsIXMLHttpRequest);
     http.open("OPTIONS", url, true);
 
-    http.onload = function(event){
+    http.onload = function(aEvent) {
       if (http.readyState === 4) {
         if (http.status === 200) {
-          promise.resolve();
+          deferred.resolve();
         } else {
-          let e = new Error("There is something wrong with the connection!");
-          promise.reject(e);
+          let e = new Error("The connection errored with status " + 
+                            http.status + " during the onload event");
+          deferred.reject(e);
         }
       }
     }
     
-    http.onerror = function(event){
-      let e = new Error("There is something wrong!");
-      promise.reject(e);
+    http.onerror = function(aEvent) {
+      let e = new Error("The connection errored with status " + 
+                        http.status + " during the onerror event");
+      deferred.reject(e);
     }
 
     http.send(null);
-    return promise.promise;
+    return deferred.promise;
   },
 
 }

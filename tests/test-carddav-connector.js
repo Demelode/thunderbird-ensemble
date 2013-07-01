@@ -4,24 +4,16 @@
 
 const MODULE_NAME = 'test-carddav-connector';
 const RELATIVE_ROOT = '../shared-modules';
-const MODULE_REQUIRES = ['folder-display-helpers',
-                         'address-book-helpers'];
+const MODULE_REQUIRES = ['folder-display-helpers'];
 
-Cu.import("resource:///modules/mailServices.js");
 Cu.import("resource://ensemble/connectors/CardDAVConnector.jsm");
 Cu.import("resource://gre/modules/Task.jsm");
 Cu.import('resource://mozmill/stdlib/httpd.js');;
 
 const Cr = Components.results;
 const kPort = 5232;
-const REQUEST_BODY = "Allow: OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, COPY, MOVE\n" +
-  "Allow: MKCOL, PROPFIND, PROPPATCH, LOCK, UNLOCK, REPORT, ACL\n" +
-  "DAV: 1, 2, 3, access-control, addressbook\n" +
-  "DAV: extended-mkcol\n" +
-  "Date: Sat, 11 Nov 2006 09:32:12 GMT\n" +
-  "Content-Length: 0";
 
-const kReturnHeader = {
+const kSuccessHeader = {
   statusCode: 200,
   statusString: "OK",
   contentType: "text/plain",
@@ -71,9 +63,12 @@ function setupModule(module) {
 
 function test_server_connection_success() {
   function connectionResponder(request, response) {
-    response.setStatusLine(request.httpVersion, 200, "OK");
-    response.setHeader("Content-Type", "text/xml", false);
-    response.bodyOutputStream.write(REQUEST_BODY, REQUEST_BODY.length);
+    response.setStatusLine(request.httpVersion, 
+                           kCardDAVReturnHeader.statusCode, 
+                           kCardDAVReturnHeader.statusString);
+    response.setHeader("Content-Type", kCardDAVReturnHeader.contentType, false);
+    response.bodyOutputStream.write(kCardDAVReturnHeader.headerBody, 
+                                    kCardDAVReturnHeader.headerBody.length);
   } 
 
   let done = false;
