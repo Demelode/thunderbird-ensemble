@@ -33,6 +33,12 @@ const kCardDAVReturnHeader = {
     "Content-Length: 0",
 }
 
+const kCardDAVAddressBook = {
+  location: "/test/",
+  displayName: "Test's Contacts",
+  description: "My Primary Address Book",
+}
+
 function MockCardDAVServer() {}
 
 MockCardDAVServer.prototype = {
@@ -99,6 +105,20 @@ function test_server_connection_success() {
 
   let connector = new CardDAVConnector();
   let promise = connector.testServerConnection("http://localhost:" + kPort);
+  
+  wait_for_promise_resolved(promise);
+}
+
+
+function test_create_address_book_on_server() {
+  gServer = new MockCardDAVServer();
+  gServer.init(kPort);
+  // gServer.registerPathHandler("/", connectionResponder);
+  gServer.start();
+
+  let connector = new CardDAVConnector();
+  let promise = connector.createAddressBook("http://localhost:" + kPort, 
+                                      kCardDAVAddressBook);
   
   wait_for_promise_resolved(promise);
 }

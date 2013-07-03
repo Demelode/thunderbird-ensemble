@@ -54,4 +54,52 @@ CardDAVConnector.prototype = {
     return deferred.promise;
   },
 
+
+  createAddressBook: function(url, addressBookObj) {
+    let deferred = Promise.defer();
+    let http = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"]
+                 .createInstance(Ci.nsIXMLHttpRequest);
+
+    let addressBookURL = url + addressBookObj.location;
+    let addressBookXML = '<?xml version="1.0" encoding="utf-8" ?>' +
+                         '<D:mkcol xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:carddav">'+
+                           '<D:set>' +
+                             '<D:prop>' +
+                             '<D:resourcetype>' +
+                               '<D:collection/>' +
+                               '<C:addressbook/>' +
+                             '</D:resourcetype>' +
+                             '<D:displayname>' + 
+                               addressBookObj.displayName + 
+                             '</D:displayname>' +
+                             '<C:addressbook-description xml:lang="en">' +
+                               addressBookObj.description + 
+                             '</C:addressbook-description>' +
+                             '</D:prop>' +
+                           '</D:set>' +
+                         '</D:mkcol>';
+    http.open("MKCOL", addressBookURL, true);
+
+    http.onload = function(aEvent) {
+      if (http.readyState === 4) {
+        if (http.status === 200) {
+          deferred.resolve();
+        } else {
+          let e = new Error("The address book creation attempt errored with status " + 
+                            http.status + " during the onload event");
+          deferred.reject(e);
+        }
+      }
+    }
+    
+    http.onerror = function(aEvent) {
+      let e = new Error("The address book creation attempt errored with status " + 
+                        http.status + " during the onerror event");
+      deferred.reject(e);
+    }
+
+    http.send(addressBookXML);
+    return deferred.promise;
+  },
+
 }
