@@ -79,9 +79,9 @@ CardDAVConnector.prototype = {
                            '</D:set>' +
                          '</D:mkcol>';
     http.open('MKCOL', addressBookURL, true);
-    http.setRequestHeader('Host', url);
-    http.setRequestHeader('Content-Length', 'xxx');
-    http.setRequestHeader('Content-Type', 'text/xml; charset="utf-8"');
+    http.setRequestHeader('Host', url, false);
+    http.setRequestHeader('Content-Length', 'xxx', false);
+    http.setRequestHeader('Content-Type', 'text/xml; charset="utf-8"', false);
 
     http.onload = function(aEvent) {
       if (http.readyState === 4) {

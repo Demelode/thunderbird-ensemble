@@ -8,7 +8,7 @@ const MODULE_REQUIRES = ['folder-display-helpers'];
 
 Cu.import("resource://ensemble/connectors/CardDAVConnector.jsm");
 Cu.import("resource://gre/modules/Task.jsm");
-Cu.import('resource://mozmill/stdlib/httpd.js');;
+Cu.import('resource://mozmill/stdlib/httpd.js');
 
 const Cr = Components.results;
 const kPort = 5232;
@@ -80,11 +80,11 @@ function wait_for_promise_resolved(promise) {
 
   Task.spawn(function() {
     yield promise.then(function() {
-      gServer.stop(function(){
+      gServer.stop(function() {
         done = true;
       });
     }, function(aError) {
-      gServer.stop(function(){
+      gServer.stop(function() {
         done = false;
       });
       throw aError;
@@ -103,7 +103,8 @@ function test_server_connection_success() {
     response.setHeader("Content-Type", kCardDAVReturnHeader.contentType, false);
     response.bodyOutputStream.write(kCardDAVReturnHeader.headerBody, 
                                     kCardDAVReturnHeader.headerBody.length);
-  } 
+  }
+
   gServer = new MockCardDAVServer();
   gServer.init(kPort);
   gServer.registerPathHandler("/", connectionResponder);
@@ -123,6 +124,7 @@ function test_create_address_book_on_server() {
                            kCreateHeader.statusString);
     response.setHeader("Content-Type", kCreateHeader.contentType, false);
   }
+  
   gServer = new MockCardDAVServer();
   gServer.init(kPort);
   gServer.registerPathHandler("http://localhost:" + kPort + kCardDAVAddressBook.location,
