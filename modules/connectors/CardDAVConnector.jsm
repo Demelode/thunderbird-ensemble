@@ -105,4 +105,35 @@ CardDAVConnector.prototype = {
     return deferred.promise;
   },
 
+
+  // Deleting an CardDAV Address Book at the specified url location. 
+  deleteAddressBook: function(url) {
+    let deferred = Promise.defer();
+    let http = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"]
+                 .createInstance(Ci.nsIXMLHttpRequest);
+
+    http.open('DELETE', url, true);
+
+    http.onload = function(aEvent) {
+      if (http.readyState === 4) {
+        if (http.status === 202) { // Status 202 is "Accepted"
+          deferred.resolve();
+        } else {
+          let e = new Error("The address book deletion attempt errored with status " + 
+                            http.status + " during the onload event");
+          deferred.reject(e);
+        }
+      }
+    }
+    
+    http.onerror = function(aEvent) {
+      let e = new Error("The address book deletion attempt errored with status " + 
+                        http.status + " during the onerror event");
+      deferred.reject(e);
+    }
+
+    http.send(null);
+    return deferred.promise;
+  },
+
 }
