@@ -21,6 +21,12 @@ const kSuccessHeader = {
   contentType: "text/plain",
 }
 
+const kCreateHeader = {
+  statusCode: 201,
+  statusString: "Created",
+  contentType: "text/plain",
+}
+
 const kCardDAVReturnHeader = {
   statusCode: 200,
   statusString: "OK",
@@ -111,9 +117,16 @@ function test_server_connection_success() {
 
 
 function test_create_address_book_on_server() {
+  function connectionResponder(request, response) {
+    response.setStatusLine(request.httpVersion, 
+                           kCreateHeader.statusCode, 
+                           kCreateHeader.statusString);
+    response.setHeader("Content-Type", kCreateHeader.contentType, false);
+  }
   gServer = new MockCardDAVServer();
   gServer.init(kPort);
-  // gServer.registerPathHandler("/", connectionResponder);
+  gServer.registerPathHandler("http://localhost:" + kPort + kCardDAVAddressBook.location,
+                              connectionResponder);
   gServer.start();
 
   let connector = new CardDAVConnector();

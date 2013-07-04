@@ -54,7 +54,7 @@ CardDAVConnector.prototype = {
     return deferred.promise;
   },
 
-
+  // Creating an CardDAV Address Book at the specified url location. 
   createAddressBook: function(url, addressBookObj) {
     let deferred = Promise.defer();
     let http = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"]
@@ -78,11 +78,14 @@ CardDAVConnector.prototype = {
                              '</D:prop>' +
                            '</D:set>' +
                          '</D:mkcol>';
-    http.open("MKCOL", addressBookURL, true);
+    http.open('MKCOL', addressBookURL, true);
+    http.setRequestHeader('Host', url);
+    http.setRequestHeader('Content-Length', 'xxx');
+    http.setRequestHeader('Content-Type', 'text/xml; charset="utf-8"');
 
     http.onload = function(aEvent) {
       if (http.readyState === 4) {
-        if (http.status === 200) {
+        if (http.status === 201) { // Status 201 is "Created"
           deferred.resolve();
         } else {
           let e = new Error("The address book creation attempt errored with status " + 
