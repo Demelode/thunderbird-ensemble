@@ -35,7 +35,7 @@ CardDAVConnector.prototype = {
     http.onload = function(aEvent) {
       if (http.readyState === 4) {
         if (http.status === 200) {
-          deferred.resolve();
+          deferred.resolve("The server connection test has succeeded!");
         } else {
           let e = new Error("The connection errored with status " + 
                             http.status + " during the onload event");
@@ -54,86 +54,86 @@ CardDAVConnector.prototype = {
     return deferred.promise;
   },
 
-  // Creating an CardDAV Address Book at the specified url location. 
-  createAddressBook: function(url, addressBookObj) {
-    let deferred = Promise.defer();
-    let http = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"]
-                 .createInstance(Ci.nsIXMLHttpRequest);
+  // // Creating an CardDAV Address Book at the specified url location. 
+  // createAddressBook: function(url, addressBookObj) {
+  //   let deferred = Promise.defer();
+  //   let http = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"]
+  //                .createInstance(Ci.nsIXMLHttpRequest);
 
-    let addressBookURL = url + addressBookObj.location;
-    let addressBookXML = '<?xml version="1.0" encoding="utf-8" ?>' +
-                         '<D:mkcol xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:carddav">'+
-                           '<D:set>' +
-                             '<D:prop>' +
-                             '<D:resourcetype>' +
-                               '<D:collection/>' +
-                               '<C:addressbook/>' +
-                             '</D:resourcetype>' +
-                             '<D:displayname>' + 
-                               addressBookObj.displayName + 
-                             '</D:displayname>' +
-                             '<C:addressbook-description xml:lang="en">' +
-                               addressBookObj.description + 
-                             '</C:addressbook-description>' +
-                             '</D:prop>' +
-                           '</D:set>' +
-                         '</D:mkcol>';
-    http.open('MKCOL', addressBookURL, true);
-    http.setRequestHeader('Host', url, false);
-    http.setRequestHeader('Content-Length', 'xxx', false);
-    http.setRequestHeader('Content-Type', 'text/xml; charset="utf-8"', false);
+  //   let addressBookURL = url + addressBookObj.location;
+  //   let addressBookXML = '<?xml version="1.0" encoding="utf-8" ?>' +
+  //                        '<D:mkcol xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:carddav">'+
+  //                          '<D:set>' +
+  //                            '<D:prop>' +
+  //                            '<D:resourcetype>' +
+  //                              '<D:collection/>' +
+  //                              '<C:addressbook/>' +
+  //                            '</D:resourcetype>' +
+  //                            '<D:displayname>' + 
+  //                              addressBookObj.displayName + 
+  //                            '</D:displayname>' +
+  //                            '<C:addressbook-description xml:lang="en">' +
+  //                              addressBookObj.description + 
+  //                            '</C:addressbook-description>' +
+  //                            '</D:prop>' +
+  //                          '</D:set>' +
+  //                        '</D:mkcol>';
+  //   http.open('MKCOL', addressBookURL, true);
+  //   http.setRequestHeader('Host', url, false);
+  //   http.setRequestHeader('Content-Length', 'xxx', false);
+  //   http.setRequestHeader('Content-Type', 'text/xml; charset="utf-8"', false);
 
-    http.onload = function(aEvent) {
-      if (http.readyState === 4) {
-        if (http.status === 201) { // Status 201 is "Created"
-          deferred.resolve();
-        } else {
-          let e = new Error("The address book creation attempt errored with status " + 
-                            http.status + " during the onload event");
-          deferred.reject(e);
-        }
-      }
-    }
+  //   http.onload = function(aEvent) {
+  //     if (http.readyState === 4) {
+  //       if (http.status === 201) { // Status 201 is "Created"
+  //         deferred.resolve();
+  //       } else {
+  //         let e = new Error("The address book creation attempt errored with status " + 
+  //                           http.status + " during the onload event");
+  //         deferred.reject(e);
+  //       }
+  //     }
+  //   }
     
-    http.onerror = function(aEvent) {
-      let e = new Error("The address book creation attempt errored with status " + 
-                        http.status + " during the onerror event");
-      deferred.reject(e);
-    }
+  //   http.onerror = function(aEvent) {
+  //     let e = new Error("The address book creation attempt errored with status " + 
+  //                       http.status + " during the onerror event");
+  //     deferred.reject(e);
+  //   }
 
-    http.send(addressBookXML);
-    return deferred.promise;
-  },
+  //   http.send(addressBookXML);
+  //   return deferred.promise;
+  // },
 
 
-  // Deleting an CardDAV Address Book at the specified url location. 
-  deleteAddressBook: function(url) {
-    let deferred = Promise.defer();
-    let http = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"]
-                 .createInstance(Ci.nsIXMLHttpRequest);
+  // // Deleting an CardDAV Address Book at the specified url location. 
+  // deleteAddressBook: function(url) {
+  //   let deferred = Promise.defer();
+  //   let http = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"]
+  //                .createInstance(Ci.nsIXMLHttpRequest);
 
-    http.open('DELETE', url, true);
+  //   http.open('DELETE', url, true);
 
-    http.onload = function(aEvent) {
-      if (http.readyState === 4) {
-        if (http.status === 202) { // Status 202 is "Accepted"
-          deferred.resolve();
-        } else {
-          let e = new Error("The address book deletion attempt errored with status " + 
-                            http.status + " during the onload event");
-          deferred.reject(e);
-        }
-      }
-    }
+  //   http.onload = function(aEvent) {
+  //     if (http.readyState === 4) {
+  //       if (http.status === 202) { // Status 202 is "Accepted"
+  //         deferred.resolve();
+  //       } else {
+  //         let e = new Error("The address book deletion attempt errored with status " + 
+  //                           http.status + " during the onload event");
+  //         deferred.reject(e);
+  //       }
+  //     }
+  //   }
     
-    http.onerror = function(aEvent) {
-      let e = new Error("The address book deletion attempt errored with status " + 
-                        http.status + " during the onerror event");
-      deferred.reject(e);
-    }
+  //   http.onerror = function(aEvent) {
+  //     let e = new Error("The address book deletion attempt errored with status " + 
+  //                       http.status + " during the onerror event");
+  //     deferred.reject(e);
+  //   }
 
-    http.send(null);
-    return deferred.promise;
-  },
+  //   http.send(null);
+  //   return deferred.promise;
+  // },
 
 }

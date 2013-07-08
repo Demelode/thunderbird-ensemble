@@ -79,16 +79,17 @@ function wait_for_promise_resolved(promise) {
   let done = false;
 
   Task.spawn(function() {
-    yield promise.then(function() {
-      gServer.stop(function() {
-        done = true;
-      });
-    }, function(aError) {
-      gServer.stop(function() {
-        done = false;
-      });
-      throw aError;
+    let result = yield promise;
+    throw new Task.Result("Resolution result for the task: " + result);
+  }).then(function (result) {
+    gServer.stop(function() {
+      done = true;
     });
+  }, function (exception) {
+    gServer.stop(function() {
+      done = false;
+    });
+   // throw exception;
   });
 
   mc.waitFor(function() done, "Timed out waiting for promise to resolve.");
@@ -117,45 +118,45 @@ function test_server_connection_success() {
 }
 
 
-function test_create_address_book_on_server() {
-  function connectionResponder(request, response) {
-    response.setStatusLine(request.httpVersion, 
-                           kCreateHeader.statusCode, 
-                           kCreateHeader.statusString);
-    response.setHeader("Content-Type", kCreateHeader.contentType, false);
-  }
+// function test_create_address_book_on_server() {
+//   function connectionResponder(request, response) {
+//     response.setStatusLine(request.httpVersion, 
+//                            kCreateHeader.statusCode, 
+//                            kCreateHeader.statusString);
+//     response.setHeader("Content-Type", kCreateHeader.contentType, false);
+//   }
 
-  gServer = new MockCardDAVServer();
-  gServer.init(kPort);
-  gServer.registerPathHandler("http://localhost:" + kPort + kCardDAVAddressBook.location,
-                              connectionResponder);
-  gServer.start();
+//   gServer = new MockCardDAVServer();
+//   gServer.init(kPort);
+//   gServer.registerPathHandler("http://localhost:" + kPort + kCardDAVAddressBook.location,
+//                               connectionResponder);
+//   gServer.start();
 
-  let connector = new CardDAVConnector();
-  let promise = connector.createAddressBook("http://localhost:" + kPort, 
-                                      kCardDAVAddressBook);
+//   let connector = new CardDAVConnector();
+//   let promise = connector.createAddressBook("http://localhost:" + kPort, 
+//                                       kCardDAVAddressBook);
   
-  wait_for_promise_resolved(promise);
-}
+//   wait_for_promise_resolved(promise);
+// }
 
-function test_delete_address_book_on_server() {
-  function connectionResponder(request, response) {
-    response.setStatusLine(request.httpVersion, 
-                           kCreateHeader.statusCode, 
-                           kCreateHeader.statusString);
-    response.setHeader("Content-Type", kCreateHeader.contentType, false);
-  }
+// function test_delete_address_book_on_server() {
+//   function connectionResponder(request, response) {
+//     response.setStatusLine(request.httpVersion, 
+//                            kCreateHeader.statusCode, 
+//                            kCreateHeader.statusString);
+//     response.setHeader("Content-Type", kCreateHeader.contentType, false);
+//   }
   
-  gServer = new MockCardDAVServer();
-  gServer.init(kPort);
-  gServer.registerPathHandler("http://localhost:" + kPort + kCardDAVAddressBook.location,
-                              connectionResponder);
-  gServer.start();
+//   gServer = new MockCardDAVServer();
+//   gServer.init(kPort);
+//   gServer.registerPathHandler("http://localhost:" + kPort + kCardDAVAddressBook.location,
+//                               connectionResponder);
+//   gServer.start();
 
-  let connector = new CardDAVConnector();
-  let promise_create = connector.createAddressBook("http://localhost:" + kPort, 
-                                      kCardDAVAddressBook);
+//   let connector = new CardDAVConnector();
+//   let promise_create = connector.createAddressBook("http://localhost:" + kPort, 
+//                                       kCardDAVAddressBook);
   
-  let promise_delete = connector.deleteAddressBook("http://localhost:" + kPort + kCardDAVAddressBook.location);
-  wait_for_promise_resolved(promise_delete);
-}
+//   let promise_delete = connector.deleteAddressBook("http://localhost:" + kPort + kCardDAVAddressBook.location);
+//   wait_for_promise_resolved(promise_delete);
+// }
