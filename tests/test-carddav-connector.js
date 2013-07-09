@@ -221,7 +221,7 @@ function test_delete_contact_on_server() {
   let promise_create_contact = connector.createAddressBook("http://localhost:" + kPort + "/" + kCardDAVContact.fileName, 
                                       kCardDAVContact);
 
-  let promise_delete_contact = connector.createAddressBook("http://localhost:" + kPort + "/" + kCardDAVContact.fileName);
+  let promise_delete_contact = connector.deleteAddressBook("http://localhost:" + kPort + "/" + kCardDAVContact.fileName);
   
   wait_for_promise_resolved(promise_delete_contact);
 }
