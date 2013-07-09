@@ -45,6 +45,23 @@ const kCardDAVAddressBook = {
   description: "My Primary Address Book",
 }
 
+const kCardDAVContact = {
+  fileName: "nick.vcf",
+  fullName: "Nicolas Cage",
+  name: "Cage;Nicolas",
+  addressType: "POSTAL",
+  address: "1234 National St; Bigcity; ON; Canada; H0H 0H0",
+  emailType: "INTERNET",
+  email: "nickcage@nick.com",
+  nickname: "The Greatest Ever",
+  note: "note to self",
+  org: "Actor org",
+  teleType: "WORK",
+  tele: "555 555 5555",
+  website: "www.nickcage.com",
+  UID: "1234-5678-9000-1",
+}
+
 function MockCardDAVServer() {}
 
 MockCardDAVServer.prototype = {
@@ -112,7 +129,6 @@ function test_server_connection_success() {
 
   let connector = new CardDAVConnector();
   let promise = connector.testServerConnection("http://localhost:" + kPort);
-  
   wait_for_promise_resolved(promise);
 }
 
@@ -158,4 +174,35 @@ function test_delete_address_book_on_server() {
   
   let promise_delete = connector.deleteAddressBook("http://localhost:" + kPort + kCardDAVAddressBook.location);
   wait_for_promise_resolved(promise_delete);
+}
+
+function test_create_contact_on_server() {
+  function connectionResponder(request, response) {
+    response.setStatusLine(request.httpVersion, 
+                           kCreateHeader.statusCode, 
+                           kCreateHeader.statusString);
+    response.setHeader("Content-Type", kCreateHeader.contentType, false);
+  }
+
+  gServer = new MockCardDAVServer();
+  gServer.init(kPort);
+  gServer.registerPathHandler("http://localhost:" + kPort + kCardDAVAddressBook.location,
+                              connectionResponder);
+  gServer.start();
+
+  let connector = new CardDAVConnector();
+  let promise_create_server = connector.createAddressBook("http://localhost:" + kPort, 
+                                      kCardDAVAddressBook);
+
+  let promise_create_contact = connector.createAddressBook("http://localhost:" + kPort, 
+                                      kCardDAVContact);
+  wait_for_promise_resolved(promise_create_contact);
+}
+
+function test_delete_contact_on_server() {
+  
+}
+
+function test_update_contact_on_server() {
+  
 }
