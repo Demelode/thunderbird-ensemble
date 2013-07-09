@@ -53,7 +53,7 @@ const kCardDAVContact = {
   address: "1234 National St; Bigcity; ON; Canada; H0H 0H0",
   emailType: "INTERNET",
   email: "nickcage@nick.com",
-  nickname: "The Greatest Ever",
+  nickName: "The Greatest Ever",
   note: "note to self",
   org: "Actor org",
   teleType: "WORK",

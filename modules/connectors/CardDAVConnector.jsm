@@ -136,4 +136,55 @@ CardDAVConnector.prototype = {
     return deferred.promise;
   },
 
+  // Creating an CardDAV Contact at the specified url location 
+  // from a predefined contact object. 
+  createContact: function(url, contactObj) {
+    let deferred = Promise.defer();
+    let http = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"]
+                 .createInstance(Ci.nsIXMLHttpRequest);
+
+    let contactXML = 'BEGIN:VCARD' +
+                     'VERSION:3.0' +
+                     'FN:' + contactObj.fullName +
+                     'N:' + contactObj.name +
+                     'ADR;TYPE=' + contactObj.addressType + 
+                        ':;' + contactObj.address +
+                     'EMAIL;TYPE=' + contactObj.emailType + 
+                        ',PREF:' + contactObj.email +
+                     'NICKNAME:' + contactObj.nickName +
+                     'NOTE:' + contactObj.note +
+                     'ORG:' + contactObj.org +
+                     'TEL;TYPE=' + contactObj.teleType + 
+                        ',VOICE:' + contactObj.tele +
+                     'URL:' + contactObj.website +
+                     'UID:' + contactObj.UID +
+                     'END:VCARD';
+
+    http.open('PUT', url, true);
+    http.setRequestHeader('If-None-Match', '*', false);
+    http.setRequestHeader('Host', url, false); // maybe incorrect
+    http.setRequestHeader('Content-Length', 'xxx', false);
+    http.setRequestHeader('Content-Type', 'text/vcard', false);
+
+    http.onload = function(aEvent) {
+      if (http.readyState === 4) {
+        if (http.status === 201) { // Status 201 is "Created"
+          deferred.resolve();
+        } else {
+          let e = new Error("The contact creation attempt errored with status " + 
+                            http.status + " during the onload event");
+          deferred.reject(e);
+        }
+      }
+    }
+    
+    http.onerror = function(aEvent) {
+      let e = new Error("The contact creation attempt errored with status " + 
+                        http.status + " during the onerror event");
+      deferred.reject(e);
+    }
+
+    http.send(contactXML);
+    return deferred.promise;
+  },
 }
