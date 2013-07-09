@@ -194,7 +194,7 @@ function test_create_contact_on_server() {
   let promise_create_server = connector.createAddressBook("http://localhost:" + kPort, 
                                       kCardDAVAddressBook);
 
-  let promise_create_contact = connector.createAddressBook("http://localhost:" + kPort, 
+  let promise_create_contact = connector.createAddressBook("http://localhost:" + kPort + "/" + kCardDAVContact.fileName, 
                                       kCardDAVContact);
   wait_for_promise_resolved(promise_create_contact);
 }
