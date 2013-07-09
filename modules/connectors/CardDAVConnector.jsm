@@ -54,6 +54,7 @@ CardDAVConnector.prototype = {
     return deferred.promise;
   },
 
+
   // Creating an CardDAV Address Book at the specified url location. 
   createAddressBook: function(url, addressBookObj) {
     let deferred = Promise.defer();
@@ -116,7 +117,7 @@ CardDAVConnector.prototype = {
 
     http.onload = function(aEvent) {
       if (http.readyState === 4) {
-        if (http.status === 202) { // Status 202 is "Accepted"
+        if (http.status === 200) { // Status 200 is "OK"
           deferred.resolve();
         } else {
           let e = new Error("The address book deletion attempt errored with status " + 
@@ -135,6 +136,7 @@ CardDAVConnector.prototype = {
     http.send(null);
     return deferred.promise;
   },
+
 
   // Creating an CardDAV Contact at the specified url location 
   // from a predefined contact object. 
@@ -187,4 +189,36 @@ CardDAVConnector.prototype = {
     http.send(contactXML);
     return deferred.promise;
   },
+
+
+  // Deleting an CardDAV contact at the specified url location. 
+  deleteContact: function(url) {
+    let deferred = Promise.defer();
+    let http = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"]
+                 .createInstance(Ci.nsIXMLHttpRequest);
+
+    http.open('DELETE', url, true);
+
+    http.onload = function(aEvent) {
+      if (http.readyState === 4) {
+        if (http.status === 200) { // Status 200 is "OK"
+          deferred.resolve();
+        } else {
+          let e = new Error("The contact deletion attempt errored with status " + 
+                            http.status + " during the onload event");
+          deferred.reject(e);
+        }
+      }
+    }
+    
+    http.onerror = function(aEvent) {
+      let e = new Error("The contact deletion attempt errored with status " + 
+                        http.status + " during the onerror event");
+      deferred.reject(e);
+    }
+
+    http.send(null);
+    return deferred.promise;
+  },
+
 }
