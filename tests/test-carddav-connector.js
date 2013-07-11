@@ -117,23 +117,24 @@ function test_server_connection_success() {
 }
 
 
-function test_create_address_book_on_server() {
-  function connectionResponder(request, response) {
-    response.setStatusLine(request.httpVersion, 
-                           kCreateHeader.statusCode, 
-                           kCreateHeader.statusString);
-    response.setHeader("Content-Type", kCreateHeader.contentType, false);
-  }
-  
-  gServer = new MockCardDAVServer();
-  gServer.init(kPort);
-  gServer.registerPathHandler("http://localhost:" + kPort + kCardDAVAddressBook.location,
-                              connectionResponder);
-  gServer.start();
 
-  let connector = new CardDAVConnector();
-  let promise = connector.createAddressBook("http://localhost:" + kPort, 
-                                      kCardDAVAddressBook);
+// function test_create_address_book_on_server() {
+//   function connectionResponder(request, response) {
+//     response.setStatusLine(request.httpVersion, 
+//                            kCreateHeader.statusCode, 
+//                            kCreateHeader.statusString);
+//     response.setHeader("Content-Type", kCreateHeader.contentType, false);
+//   }
   
-  wait_for_promise_resolved(promise);
-}
+//   gServer = new MockCardDAVServer();
+//   gServer.init(kPort);
+//   gServer.registerPathHandler("http://localhost:" + kPort + kCardDAVAddressBook.location,
+//                               connectionResponder);
+//   gServer.start();
+
+//   let connector = new CardDAVConnector();
+//   let promise = connector.createAddressBook("http://localhost:" + kPort, 
+//                                       kCardDAVAddressBook);
+  
+//   wait_for_promise_resolved(promise);
+// }
