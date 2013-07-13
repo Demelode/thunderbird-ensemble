@@ -6,9 +6,6 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 const Cu = Components.utils;
 
-const kCardDAVServerURL = "http://localhost:5232";
-const kAddressBookURL = "/jon/contacts/";
-
 let EXPORTED_SYMBOLS = ['CardDAVConnector'];
 
 Cu.import("resource://gre/modules/commonjs/sdk/core/promise.js");
@@ -22,7 +19,9 @@ CardDAVConnector.prototype = {
     let deferred = Promise.defer();
     let http = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"]
                  .createInstance(Ci.nsIXMLHttpRequest);
-    http.open("OPTIONS", url, true);
+                 
+    http.open("OPTIONS", "/", true);
+    http.setRequestHeader('Host', url, false);
 
     http.onload = function(aEvent) {
       if (http.readyState === 4) {
@@ -52,9 +51,9 @@ CardDAVConnector.prototype = {
     let http = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"]
                  .createInstance(Ci.nsIXMLHttpRequest);
 
-    http.open('REPORT', kAddressBookURL, true);
+    http.open('REPORT', "/", true);
     http.responseType = 'json';
-    http.setRequestHeader('Host', kCardDAVServerURL, false);
+    http.setRequestHeader('Host', url, false);
     http.setRequestHeader('Depth', 1, false);
     http.setRequestHeader('Content-Type', 'text/xml; charset="utf-8"', false);
     http.setRequestHeader('Content-Length', 'xxxx', false);

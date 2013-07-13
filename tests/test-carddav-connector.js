@@ -121,7 +121,7 @@ function test_server_connection_success() {
 }
 
 
-function test_readRecords() {
+function test_read_records() {
   function connectionResponder(request, response) {
     response.setStatusLine(request.httpVersion, 
                            kMultiStatusHeader.statusCode, 
