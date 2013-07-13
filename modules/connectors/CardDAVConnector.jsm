@@ -52,7 +52,7 @@ CardDAVConnector.prototype = {
     let http = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"]
                  .createInstance(Ci.nsIXMLHttpRequest);
 
-    http.open('REPORT', "/", true);
+    http.open('REPORT', url, true);
     http.responseType = 'json';
     http.setRequestHeader('Host', url, false);
     http.setRequestHeader('Depth', 1, false);

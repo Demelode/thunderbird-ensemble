@@ -75,6 +75,9 @@ function setupModule(module) {
 
 
 function setupCardDAVServer(port, location, responder) {
+  if (gServer !== null) {
+    gServer.stop(function() {});
+  }
   gServer = new MockCardDAVServer();
   gServer.init(port);
   gServer.registerPathHandler(location, responder);
