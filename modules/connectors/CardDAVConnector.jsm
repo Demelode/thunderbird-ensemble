@@ -15,17 +15,18 @@ let CardDAVConnector = function(aAccountKey, aRecordChangesCbObj) {};
 
 CardDAVConnector.prototype = {
 
-  testServerConnection: function(url) {
+  testConnection: function(url) {
     let deferred = Promise.defer();
     let http = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"]
                  .createInstance(Ci.nsIXMLHttpRequest);
                  
-    http.open("OPTIONS", "/", true);
-    http.setRequestHeader('Host', url, false);
+    http.open("OPTIONS", url, true);
 
     http.onload = function(aEvent) {
       if (http.readyState === 4) {
-        if (http.status === 200) {
+        if (http.status === 200 && 
+            http.getAllResponseHeaders() !== null && 
+            http.getAllResponseHeaders().indexOf('addressbook') > -1) {
           deferred.resolve();
         } else {
           let e = new Error("The connection errored with status " + 
@@ -93,10 +94,4 @@ CardDAVConnector.prototype = {
     http.send(requestXML);
     return deferred.promise;
   },
-
-
-  // readRecords: function(aIDCollection) {
-    
-  // },
-
 }

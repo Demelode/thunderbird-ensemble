@@ -36,13 +36,12 @@ const kMultiStatusHeader = {
 const kCardDAVReturnHeader = {
   statusCode: 200,
   statusString: "OK",
-  contentType: "text/xml",
-  headerBody: "Allow: OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, COPY, MOVE\n" +
-    "Allow: MKCOL, PROPFIND, PROPPATCH, LOCK, UNLOCK, REPORT, ACL\n" +
-    "DAV: 1, 2, 3, access-control, addressbook\n" +
-    "DAV: extended-mkcol\n" +
-    "Date: Sat, 11 Nov 2006 09:32:12 GMT\n" +
-    "Content-Length: 0",
+  allow_1: "OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, COPY, MOVE",
+  allow_2: "MKCOL, PROPFIND, PROPPATCH, LOCK, UNLOCK, REPORT, ACL",
+  dav_1: "1, 2, 3, access-control, addressbook",
+  dav_2: "extended-mkcol",
+  date: "Sat, 11 Nov 2006 09:32:12 GMT",
+  contentLength: "0", 
 }
 
 function MockCardDAVServer() {}
@@ -108,14 +107,17 @@ function test_server_connection_success() {
     response.setStatusLine(request.httpVersion, 
                            kCardDAVReturnHeader.statusCode, 
                            kCardDAVReturnHeader.statusString);
-    response.setHeader("Content-Type", kCardDAVReturnHeader.contentType, false);
-    response.bodyOutputStream.write(kCardDAVReturnHeader.headerBody, 
-                                    kCardDAVReturnHeader.headerBody.length);
+    response.setHeader("Allow", kCardDAVReturnHeader.allow_1, false);
+    response.setHeader("Allow", kCardDAVReturnHeader.allow_2, false);
+    response.setHeader("DAV", kCardDAVReturnHeader.dav_1, false);
+    response.setHeader("DAV", kCardDAVReturnHeader.dav_2, false);
+    response.setHeader("Date", kCardDAVReturnHeader.date, false);
+    response.setHeader("Content-Length", kCardDAVReturnHeader.contentLength, false);
   }
 
   setupCardDAVServer(kPort, "/", connectionResponder);
   let connector = new CardDAVConnector();
-  let promise = connector.testServerConnection("http://localhost:" + kPort);
+  let promise = connector.testConnection("http://localhost:" + kPort);
   
   wait_for_promise_resolved(promise);
 }
@@ -131,7 +133,7 @@ function test_read_records() {
 
   setupCardDAVServer(kPort, "/", connectionResponder);
   let connector = new CardDAVConnector();
-  let promise = connector.testServerConnection("http://localhost:" + kPort);
+  let promise = connector.readRecords("http://localhost:" + kPort);
   
   wait_for_promise_resolved(promise);
 }
