@@ -27,6 +27,12 @@ const kCreateHeader = {
   contentType: "text/plain",
 }
 
+const kMultiStatusHeader = {
+  statusCode: 207,
+  statusString: "Multi-Status",
+  contentType: "text/xml",
+}
+
 const kCardDAVReturnHeader = {
   statusCode: 200,
   statusString: "OK",
@@ -37,12 +43,6 @@ const kCardDAVReturnHeader = {
     "DAV: extended-mkcol\n" +
     "Date: Sat, 11 Nov 2006 09:32:12 GMT\n" +
     "Content-Length: 0",
-}
-
-const kCardDAVAddressBook = {
-  location: "/test/",
-  displayName: "Test's Contacts",
-  description: "My Primary Address Book",
 }
 
 function MockCardDAVServer() {}
@@ -72,6 +72,14 @@ MockCardDAVServer.prototype = {
 
 function setupModule(module) {
   collector.getModule("folder-display-helpers").installInto(module);
+}
+
+
+function setupCardDAVServer(port, location, responder) {
+  gServer = new MockCardDAVServer();
+  gServer.init(port);
+  gServer.registerPathHandler(location, responder);
+  gServer.start();
 }
 
 
@@ -105,11 +113,7 @@ function test_server_connection_success() {
                                     kCardDAVReturnHeader.headerBody.length);
   }
 
-  gServer = new MockCardDAVServer();
-  gServer.init(kPort);
-  gServer.registerPathHandler("/", connectionResponder);
-  gServer.start();
-
+  setupCardDAVServer(kPort, "/", connectionResponder);
   let connector = new CardDAVConnector();
   let promise = connector.testServerConnection("http://localhost:" + kPort);
   
@@ -117,24 +121,17 @@ function test_server_connection_success() {
 }
 
 
+function test_readRecords() {
+  function connectionResponder(request, response) {
+    response.setStatusLine(request.httpVersion, 
+                           kMultiStatusHeader.statusCode, 
+                           kMultiStatusHeader.statusString);
+    response.setHeader("Content-Type", kMultiStatusHeader.contentType, false);
+  }
 
-// function test_create_address_book_on_server() {
-//   function connectionResponder(request, response) {
-//     response.setStatusLine(request.httpVersion, 
-//                            kCreateHeader.statusCode, 
-//                            kCreateHeader.statusString);
-//     response.setHeader("Content-Type", kCreateHeader.contentType, false);
-//   }
+  setupCardDAVServer(kPort, "/", connectionResponder);
+  let connector = new CardDAVConnector();
+  let promise = connector.testServerConnection("http://localhost:" + kPort);
   
-//   gServer = new MockCardDAVServer();
-//   gServer.init(kPort);
-//   gServer.registerPathHandler("http://localhost:" + kPort + kCardDAVAddressBook.location,
-//                               connectionResponder);
-//   gServer.start();
-
-//   let connector = new CardDAVConnector();
-//   let promise = connector.createAddressBook("http://localhost:" + kPort, 
-//                                       kCardDAVAddressBook);
-  
-//   wait_for_promise_resolved(promise);
-// }
+  wait_for_promise_resolved(promise);
+}
