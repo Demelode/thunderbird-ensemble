@@ -11,7 +11,7 @@ Cu.import("resource://gre/modules/Task.jsm");
 Cu.import('resource://mozmill/stdlib/httpd.js');
 
 const Cr = Components.results;
-const kPort = 5232;
+const kPort = 8080;
 
 let gServer = null;
 
@@ -76,7 +76,7 @@ function setupCardDAVServer(port, location, responder) {
   gServer = new MockCardDAVServer();
   gServer.init(port);
   gServer.registerPathHandler(location, responder);
-  gServer.start();
+  gServer.start();   
 }
 
 
