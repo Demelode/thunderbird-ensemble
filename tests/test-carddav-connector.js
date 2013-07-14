@@ -116,7 +116,7 @@ function test_server_connection_success() {
 
   setupCardDAVServer(kPort, "/test", connectionResponder);
   let connector = new CardDAVConnector();
-  let promise = connector.testConnection("localhost:" + kPort + "/test");
+  let promise = connector.testConnection("http://localhost:" + kPort + "/test");
 
   wait_for_promise_resolved(promise);
 }
@@ -132,7 +132,7 @@ function test_read_records() {
 
   setupCardDAVServer(kPort, "/", connectionResponder);
   let connector = new CardDAVConnector();
-  let promise = connector.readRecords("localhost:" + kPort);
+  let promise = connector.readRecords("http://localhost:" + kPort);
   
   wait_for_promise_resolved(promise);
 }
