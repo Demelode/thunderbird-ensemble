@@ -54,7 +54,7 @@ CardDAVConnector.prototype = {
 
     http.open('REPORT', url, true);
     // http.responseType = 'json';
-    let host = Services.io.newURI(url, null, null).host;
+    let host = Services.io.newURI(url, null, null).hostPort;
 
     http.setRequestHeader('Host', host);
     http.setRequestHeader('Depth', '1');
