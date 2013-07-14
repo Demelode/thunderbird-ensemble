@@ -53,11 +53,11 @@ CardDAVConnector.prototype = {
                  .createInstance(Ci.nsIXMLHttpRequest);
 
     http.open('REPORT', url, true);
-    http.responseType = 'json';
-    http.setRequestHeader('Host', url, false);
-    http.setRequestHeader('Depth', 1, false);
-    http.setRequestHeader('Content-Type', 'text/xml; charset="utf-8"', false);
-    http.setRequestHeader('Content-Length', 'xxxx', false);
+    // http.responseType = 'json';
+    http.setRequestHeader('Host', url);
+    http.setRequestHeader('Depth', '1');
+    http.setRequestHeader('Content-Type', 'text/xml; charset="utf-8"');
+    // http.setRequestHeader('Content-Length', 'xxxx');
 
     let requestXML = '<?xml version="1.0" encoding="utf-8" ?>' +
                      '<C:addressbook-query xmlns:D="DAV:" ' + 

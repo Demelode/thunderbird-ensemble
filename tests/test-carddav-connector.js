@@ -36,10 +36,8 @@ const kMultiStatusHeader = {
 const kCardDAVReturnHeader = {
   statusCode: 200,
   statusString: "OK",
-  allow_1: "OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, COPY, MOVE",
-  allow_2: "MKCOL, PROPFIND, PROPPATCH, LOCK, UNLOCK, REPORT, ACL",
-  dav_1: "1, 2, 3, access-control, addressbook",
-  dav_2: "extended-mkcol",
+  allow: "OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, COPY, MOVE, MKCOL, PROPFIND, PROPPATCH, LOCK, UNLOCK, REPORT, ACL",
+  dav: "1, 2, 3, access-control, addressbook, extended-mkcol",
   date: "Sat, 11 Nov 2006 09:32:12 GMT",
   contentLength: "0", 
 }
@@ -106,33 +104,25 @@ function wait_for_promise_resolved(promise) {
 
 
 function test_server_connection_success() {
-  let done = false;
-
   function connectionResponder(request, response) {
     response.setStatusLine(request.httpVersion, 
                            kCardDAVReturnHeader.statusCode, 
                            kCardDAVReturnHeader.statusString);
-    response.setHeader("Allow", kCardDAVReturnHeader.allow_1, false);
-    response.setHeader("Allow", kCardDAVReturnHeader.allow_2, false);
-    response.setHeader("DAV", kCardDAVReturnHeader.dav_1, false);
-    response.setHeader("DAV", kCardDAVReturnHeader.dav_2, false);
+    response.setHeader("Allow", kCardDAVReturnHeader.allow, false);
+    response.setHeader("DAV", kCardDAVReturnHeader.dav, false);
     response.setHeader("Date", kCardDAVReturnHeader.date, false);
     response.setHeader("Content-Length", kCardDAVReturnHeader.contentLength, false);
   }
 
   setupCardDAVServer(kPort, "/test", connectionResponder);
   let connector = new CardDAVConnector();
-  let promise = connector.testConnection("http://localhost:" + kPort + "/test");
+  let promise = connector.testConnection("localhost:" + kPort + "/test");
 
   wait_for_promise_resolved(promise);
-
-  mc.waitFor(function() done, "Timed out waiting for test server connection to resolve.");
 }
 
 
 function test_read_records() {
-  let done = false;
-
   function connectionResponder(request, response) {
     response.setStatusLine(request.httpVersion, 
                            kMultiStatusHeader.statusCode, 
@@ -142,9 +132,7 @@ function test_read_records() {
 
   setupCardDAVServer(kPort, "/", connectionResponder);
   let connector = new CardDAVConnector();
-  let promise = connector.readRecords("http://localhost:" + kPort);
+  let promise = connector.readRecords("localhost:" + kPort);
   
   wait_for_promise_resolved(promise);
-
-  mc.waitFor(function() done, "Timed out waiting for test read records to resolve.");
 }
