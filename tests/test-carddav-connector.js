@@ -106,6 +106,8 @@ function wait_for_promise_resolved(promise) {
 
 
 function test_server_connection_success() {
+  let done = false;
+
   function connectionResponder(request, response) {
     response.setStatusLine(request.httpVersion, 
                            kCardDAVReturnHeader.statusCode, 
@@ -118,15 +120,19 @@ function test_server_connection_success() {
     response.setHeader("Content-Length", kCardDAVReturnHeader.contentLength, false);
   }
 
-  setupCardDAVServer(kPort, "/", connectionResponder);
+  setupCardDAVServer(kPort, "/test", connectionResponder);
   let connector = new CardDAVConnector();
-  let promise = connector.testConnection("http://localhost:" + kPort);
-  
+  let promise = connector.testConnection("http://localhost:" + kPort + "/test");
+
   wait_for_promise_resolved(promise);
+
+  mc.waitFor(function() done, "Timed out waiting for test server connection to resolve.");
 }
 
 
 function test_read_records() {
+  let done = false;
+
   function connectionResponder(request, response) {
     response.setStatusLine(request.httpVersion, 
                            kMultiStatusHeader.statusCode, 
@@ -139,4 +145,6 @@ function test_read_records() {
   let promise = connector.readRecords("http://localhost:" + kPort);
   
   wait_for_promise_resolved(promise);
+
+  mc.waitFor(function() done, "Timed out waiting for test read records to resolve.");
 }
