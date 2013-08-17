@@ -51,7 +51,7 @@ CardDAVConnector.prototype = {
       return deferred.reject(e);
     }
     let url = prefs.address;
-    
+
     if (Services.io.newURI(url, null, null).scheme === "https") {
       Task.spawn(function () {
         let authPromise = this.authorize(); // get Base64 user:pass
@@ -87,7 +87,13 @@ CardDAVConnector.prototype = {
     return deferred.promise;
   },
 
-
+  /*
+  This should return a promise that holds a string value of a Base64
+  conversion of the following pattern 'username:password', where 
+  'username is the client's inputted username and 'password' is
+  the clients inputted password. Both these values are seperated by 
+  a colon ':'.
+  */
   authorize: function() {
     return Cr.NS_ERROR_NOT_IMPLEMENTED;
   },
