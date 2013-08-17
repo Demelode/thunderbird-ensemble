@@ -51,6 +51,15 @@ CardDAVConnector.prototype = {
       return deferred.reject(e);
     }
     let url = prefs.address;
+    
+    if (Services.io.newURI(url, null, null).scheme === "https") {
+      Task.spawn(function () {
+        let authPromise = this.authorize(); // get Base64 user:pass
+        let authString = yield authPromise;
+        http.setRequestHeader('Authorization', 'Basic ' + authString);
+        // See http://en.wikipedia.org/wiki/Basic_access_authentication
+      });
+    }
 
     http.open("OPTIONS", url, true);
 
@@ -210,6 +219,15 @@ CardDAVConnector.prototype = {
     http.setRequestHeader('Depth', '1');
     http.setRequestHeader('Content-Type', 'text/xml; charset="utf-8"');
 
+    if (Services.io.newURI(url, null, null).scheme === "https") {
+      Task.spawn(function () {
+        let authPromise = this.authorize(); // get Base64 user:pass
+        let authString = yield authPromise;
+        http.setRequestHeader('Authorization', 'Basic ' + authString);
+        // See http://en.wikipedia.org/wiki/Basic_access_authentication
+      });
+    }
+
     requestXML = '<?xml version="1.0" encoding="utf-8" ?>' +
                    '<C:addressbook-query xmlns:D="DAV:" ' + 
                    'xmlns:C="urn:ietf:params:xml:ns:carddav">' +
@@ -284,7 +302,7 @@ CardDAVConnector.prototype = {
           let e = new Error("The _getvCardsFromServer attempt errored with status " + 
                             http.status + " during the onload event");
           deferred.reject(e);
-        }
+        } 
       }
     }.bind(this);
     
