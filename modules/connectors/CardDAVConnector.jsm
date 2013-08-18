@@ -87,6 +87,7 @@ CardDAVConnector.prototype = {
     return deferred.promise;
   },
 
+
   /*
   This should return a promise that holds a string value of a Base64
   conversion of the following pattern 'username:password', where 
@@ -95,7 +96,13 @@ CardDAVConnector.prototype = {
   a colon ':'.
   */
   authorize: function() {
-    return Cr.NS_ERROR_NOT_IMPLEMENTED;
+    let deferred = Promise.defer();
+    let username = "";
+    let password = "";
+    // TODO: get username and password from UI.
+    let authString = username + ":" + password;
+    deferred.resolve(btoa(authString));
+    return deferred.promise;
   },
 
 
