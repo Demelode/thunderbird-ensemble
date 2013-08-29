@@ -139,7 +139,7 @@ CardDAVConnector.prototype = {
         let filter = new Map();
         filter.set("UID", tempUID);
 
-        let getPromise = this._getvCardsFromServer(true, fullProperties, filter);
+        let getPromise = this._getvCardsFromServer(true, filter);
         let aRecordArray = yield getPromise;
 
         if(!map.has(tempUID)) { // New Record
@@ -254,11 +254,12 @@ CardDAVConnector.prototype = {
           // does not support RegExp Look-behind, each ETag must
           // also have its opening tag removed manually.
           if (aGetETag) {
-            etag = XMLresponse.match(/<D:getetag>(.*?)(?=<\/D:getetag>)/g);
+            etag = XMLresponse.match(/<getetag>(.*?)(?=<\/getetag>)/g);
+
             for (let i = 0; i < etag.length; i++) {
-              etag[i] = etag[i].replace(/<D:getetag>/, "");
+              etag[i] = etag[i].replace(/<getetag>/, "");
             }
-          }
+          } 
 
           // Remove unneeded XML buffers and trim whitespace, 
           // then split each vCard into a seperate array position.
