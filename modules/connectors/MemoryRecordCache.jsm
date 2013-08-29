@@ -6,7 +6,7 @@ const Cu = Components.utils;
 
 let EXPORTED_SYMBOLS = ['MemoryRecordCache'];
 
-Cu.import("resource://gre/modules/Promise.jsm");
+Cu.import("resource://gre/modules/commonjs/promise/core.js");
 
 let MemoryRecordCache = function() {
   this._cache = new Map();

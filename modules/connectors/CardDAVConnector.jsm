@@ -9,7 +9,7 @@ const Cr = Components.results;
 
 let EXPORTED_SYMBOLS = ['CardDAVConnector'];
 
-Cu.import("resource://gre/modules/Promise.jsm");
+Cu.import("resource://gre/modules/commonjs/promise/core.js");
 Cu.import("resource://gre/modules/Task.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 
@@ -110,12 +110,8 @@ CardDAVConnector.prototype = {
   },
 
   read: function() {
-    let deferred = Promise.defer();
-    let properties = new Array('N', 'FN', 'ORG', 'EMAIL',
-                               'TEL', 'ADR', 'URL', 'NOTE', 
-                               'CATEGORIES', 'UID', 'REV');
-    Task.spawn(function () {
-      let getPromise = this._getvCardsFromServer(true, properties, null);
+    return Task.spawn(function () {
+      let getPromise = this._getvCardsFromServer(true, null);
       let aRecordArray = yield getPromise;
 
       for (let i = 0; i < aRecordArray.length; i++) {
@@ -125,19 +121,12 @@ CardDAVConnector.prototype = {
         this._cache.setRecord(tempUID, tempRecord);
         this._listener.onImport(tempRecord);
       }
-    });
-
-    deferred.resolve(true);
-    return deferred.promise;
+    }.bind(this));
   },
 
   poll: function() {
-    let properties = new Array("UID");
-    let fullProperties = new Array('N', 'FN', 'ORG', 'EMAIL',
-                               'TEL', 'ADR', 'URL', 'NOTE', 
-                               'CATEGORIES', 'UID', 'REV');
     return Task.spawn(function () {
-      let getPromise = this._getvCardsFromServer(true, properties, null);
+      let getPromise = this._getvCardsFromServer(true, null);
       let tempRecordArray = yield getPromise;
 
       let cacheMapPromise = this._cache.getAllRecords();
@@ -196,7 +185,7 @@ CardDAVConnector.prototype = {
   // I.e. {"EMAIL":"test@test.com"} would filter for the EMAIL property of test@test.com, 
   // whereas in {"EMAIL":test@test.com, "UID":123} would do the same, but also include 
   // an additonal filter of the UID being 123.
-  _getvCardsFromServer: function(aGetETag, aProperties, aFilter) {
+  _getvCardsFromServer: function(aGetETag, aFilter) {
     let deferred = Promise.defer();
     let http = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"]
                  .createInstance(Ci.nsIXMLHttpRequest);
@@ -234,13 +223,7 @@ CardDAVConnector.prototype = {
       requestXML += '<D:getetag/>';
     }
 
-    requestXML += '<C:address-data>';
-
-    for (let i = 0; i < aProperties.length; i++) {
-      requestXML += '<C:prop name="' + aProperties[i] + '"/>';
-    }
-
-    requestXML += '</D:prop>';
+    requestXML += '<C:address-data></C:address-data></D:prop>';
 
     if (aFilter) {
       requestXML += '<C:filter test="anyof">';
