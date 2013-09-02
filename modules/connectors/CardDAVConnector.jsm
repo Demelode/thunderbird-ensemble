@@ -93,11 +93,22 @@ CardDAVConnector.prototype = {
   */
   authorize: function() {
     let deferred = Promise.defer();
-    let username = "";
-    let password = "";
-    // TODO: get username and password from UI.
-    let authString = username + ":" + password;
-    deferred.resolve(btoa(authString));
+    let prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
+                        .getService(Components.interfaces.nsIPromptService);
+    let username = {value: "user"};
+    let password = {value: "pass"};
+    let check = {value: true};
+
+    let result = prompts.promptUsernameAndPassword(null, "Title", "Enter username and password:",
+                                                   username, password, "Save", check);
+    if (!check.value) {
+      let e = new Error("The authorization was cancelled.");
+      deferred.reject(e);
+    } else {
+      let authString = username.value + ":" + password.value;
+      deferred.resolve(btoa(authString));
+    }
+
     return deferred.promise;
   },
 
