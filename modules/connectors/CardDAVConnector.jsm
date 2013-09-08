@@ -28,6 +28,7 @@ CardDAVConnector.prototype = {
   _displayName: "",
   _initialized: false,
   _initializing: false,
+  _credentials: "",
 
   get accountKey() this._accountKey,
   get isSyncable() true,
@@ -37,6 +38,9 @@ CardDAVConnector.prototype = {
   get initializing() this._initializing,
   get initialized() this._initialized,
 
+  // Promise is resolved as true if the connection requires further
+  // credentials from the user, or resolves false if credentials are
+  // not needed. Rejects as an error otherwise.
   testConnection: function() {
     let deferred = Promise.defer();
     let http = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"]
@@ -49,23 +53,17 @@ CardDAVConnector.prototype = {
     }
     let url = prefs.address;
 
-    if (Services.io.newURI(url, null, null).scheme === "https") {
-      Task.spawn(function () {
-        let authPromise = this.authorize(); // get Base64 user:pass
-        let authString = yield authPromise;
-        http.setRequestHeader('Authorization', 'Basic ' + authString);
-        // See http://en.wikipedia.org/wiki/Basic_access_authentication
-      });
-    }
-
     http.open("OPTIONS", url, true);
 
     http.onload = function(aEvent) {
       if (http.readyState === 4) {
         if (http.status === 200 && 
             http.getAllResponseHeaders() !== null && 
-            http.getAllResponseHeaders().indexOf('addressbook') > -1) {
-          deferred.resolve();
+            http.getAllResponseHeaders().indexOf('addressbook') > -1 && 
+            Services.io.newURI(url, null, null).scheme !== "https") {
+          deferred.resolve(false);
+        } else if (http.status === 401) {
+          deffered.resolve(true);
         } else {
           let e = new Error("The connection errored with status " + 
                             http.status + " during the onload event");
@@ -106,7 +104,8 @@ CardDAVConnector.prototype = {
       deferred.reject(e);
     } else {
       let authString = username.value + ":" + password.value;
-      deferred.resolve(btoa(authString));
+      _credentials = btoa(authString);
+      deferred.resolve();
     }
 
     return deferred.promise;
@@ -216,14 +215,22 @@ CardDAVConnector.prototype = {
     http.setRequestHeader('Depth', '1');
     http.setRequestHeader('Content-Type', 'text/xml; charset="utf-8"');
 
-    if (Services.io.newURI(url, null, null).scheme === "https") {
-      Task.spawn(function () {
-        let authPromise = this.authorize(); // get Base64 user:pass
-        let authString = yield authPromise;
-        http.setRequestHeader('Authorization', 'Basic ' + authString);
-        // See http://en.wikipedia.org/wiki/Basic_access_authentication
-      });
-    }
+    let testConnectionPromise = this.testConnection();
+
+    let authPromise = testConnectionPromise.then(function onResolve(aValue) {
+      if (aValue) {
+        Task.spawn(function () {
+          let authPromise = this.authorize(); // get Base64 user:pass
+          let result = yield authPromise;
+          http.setRequestHeader('Authorization', 'Basic ' + this._credentials);
+          // See http://en.wikipedia.org/wiki/Basic_access_authentication
+        });
+      }
+    }, function onReject(aReason) {
+      let e = new Error("The connector function had an issue authenticating. " +
+                        "Reason: " + aReason);
+      return deferred.reject(e);
+    });
 
     requestXML = '<?xml version="1.0" encoding="utf-8" ?>' +
                    '<C:addressbook-query xmlns:D="DAV:" ' + 
