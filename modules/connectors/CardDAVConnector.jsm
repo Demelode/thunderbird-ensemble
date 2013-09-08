@@ -93,11 +93,11 @@ CardDAVConnector.prototype = {
   */
   authorize: function() {
     let deferred = Promise.defer();
-    let prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
-                        .getService(Components.interfaces.nsIPromptService);
+    let prompts = Cc["@mozilla.org/embedcomp/prompt-service;1"]
+                        .getService(Ci.nsIPromptService);
     let username = {value: "user"};
     let password = {value: "pass"};
-    let check = {value: true};
+    let check = {value: false};
 
     let result = prompts.promptUsernameAndPassword(null, "Title", "Enter username and password:",
                                                    username, password, "Save", check);
@@ -270,7 +270,7 @@ CardDAVConnector.prototype = {
             for (let i = 0; i < etag.length; i++) {
               etag[i] = etag[i].replace(/<getetag>/, "");
             }
-          } 
+          }
 
           // Remove unneeded XML buffers and trim whitespace, 
           // then split each vCard into a seperate array position.
