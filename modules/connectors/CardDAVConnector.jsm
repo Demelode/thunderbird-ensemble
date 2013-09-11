@@ -55,12 +55,15 @@ CardDAVConnector.prototype = {
 
     http.open("OPTIONS", url, true);
 
+    if(Services.io.newURI(url, null, null).scheme === "https") {
+      http.setRequestHeader('Authorization', 'Basic ' + this._credentials);
+    }
+
     http.onload = function(aEvent) {
       if (http.readyState === 4) {
         if (http.status === 200 && 
             http.getAllResponseHeaders() !== null && 
-            http.getAllResponseHeaders().indexOf('addressbook') > -1 && 
-            Services.io.newURI(url, null, null).scheme !== "https") {
+            http.getAllResponseHeaders().indexOf('addressbook') > -1) {
           deferred.resolve(false);
         } else if (http.status === 401) {
           deffered.resolve(true);
@@ -82,29 +85,20 @@ CardDAVConnector.prototype = {
     return deferred.promise;
   },
 
-  /*
-  This should return a promise that holds a string value of a Base64
-  conversion of the following pattern 'username:password', where 
-  'username is the client's inputted username and 'password' is
-  the clients inputted password. Both these values are seperated by 
-  a colon ':'.
-  */
   authorize: function() {
     let deferred = Promise.defer();
-    let prompts = Cc["@mozilla.org/embedcomp/prompt-service;1"]
-                        .getService(Ci.nsIPromptService);
+    let prompts = Services.prompt;
     let username = {value: "user"};
     let password = {value: "pass"};
-    let check = {value: false};
 
-    let result = prompts.promptUsernameAndPassword(null, "Title", "Enter username and password:",
-                                                   username, password, "Save", check);
+    let result = prompts.promptUsernameAndPassword(null, "Authentication", "Enter username and password:",
+                                                   username, password, null, null);
     if (!check.value) {
       let e = new Error("The authorization was cancelled.");
       deferred.reject(e);
     } else {
       let authString = username.value + ":" + password.value;
-      _credentials = btoa(authString);
+      this._credentials = btoa(authString);
       deferred.resolve();
     }
 
@@ -217,14 +211,16 @@ CardDAVConnector.prototype = {
 
     let testConnectionPromise = this.testConnection();
 
-    let authPromise = testConnectionPromise.then(function onResolve(aValue) {
-      if (aValue) {
+    let authPromise = testConnectionPromise.then(function onResolve(requiresAuth) {
+      if (requiresAuth) {
         Task.spawn(function () {
-          let authPromise = this.authorize(); // get Base64 user:pass
-          let result = yield authPromise;
-          http.setRequestHeader('Authorization', 'Basic ' + this._credentials);
-          // See http://en.wikipedia.org/wiki/Basic_access_authentication
+          let authPromise = this.authorize();
+          yield authPromise;
         });
+      }
+
+      if(Services.io.newURI(url, null, null).scheme === "https") {
+        http.setRequestHeader('Authorization', 'Basic ' + this._credentials);
       }
     }, function onReject(aReason) {
       let e = new Error("The connector function had an issue authenticating. " +
