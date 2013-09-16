@@ -12,10 +12,29 @@ let EXPORTED_SYMBOLS = ['LDAPConnector'];
 Cu.import("resource://gre/modules/Promise.jsm");
 Cu.import("resource://gre/modules/Task.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
+Cu.import("resource://gre/modules/ctypes.jsm");
 
-Cu.import("resource://ensemble/lib/VCardParser.jsm");
 Cu.import("resource://ensemble/Record.jsm");
 Cu.import("resource://ensemble/connectors/MemoryRecordCache.jsm");
+
+// Determine Operating System
+let OSName = "Unknown OS";
+if (navigator.appVersion.indexOf("Win") != -1) OSName = "Windows";
+if (navigator.appVersion.indexOf("Mac") != -1) OSName = "MacOS";
+if (navigator.appVersion.indexOf("X11") != -1) OSName = "UNIX";
+if (navigator.appVersion.indexOf("Linux") != -1) OSName = "Linux";
+
+// Load the appropriate library
+let lib;
+if (OSName === "Windows") {
+    lib = ctypes.open("user32.dll");
+} else if (OSName === "MacOS") {
+    lib = ctypes.open("/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation");
+    throw Cr.NS_ERROR_NOT_IMPLEMENTED;
+} else {
+    throw Cr.NS_ERROR_NOT_IMPLEMENTED;
+}
+
 
 let LDAPConnector = function(aAccountKey, aListener, aCache) {
     this._accountKey = aAccountKey;
@@ -39,23 +58,23 @@ LDAPConnector.prototype = {
     get initialized() this._initialized,
     
     testConnection: function() {
-        return null;
+        return Cr.NS_ERROR_NOT_IMPLEMENTED;
     },
     
     authorize: function() {
-        return null;
+        return Cr.NS_ERROR_NOT_IMPLEMENTED;
     },
 
     init: function() {
-        return null;
+        return Cr.NS_ERROR_NOT_IMPLEMENTED;
     },
 
     read: function() {
-        return null;
+        return Cr.NS_ERROR_NOT_IMPLEMENTED;
     },
 
     poll: function() {
-        return null;
+        return Cr.NS_ERROR_NOT_IMPLEMENTED;
     },
 };
 
@@ -65,4 +84,4 @@ LDAPConnector.serviceName = "LDAP Connector";
 LDAPConnector.createConnectionURI = "TBD!";
 LDAPConnector.managementURI = "TBD!";
 LDAPConnector.defaultPrefs = {};
-LDAPConnector.uniqueID = "carddav-connector";
+LDAPConnector.uniqueID = "ldap-connector";
